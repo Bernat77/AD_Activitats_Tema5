@@ -69,9 +69,9 @@ public class Gestor {
 
                 String[] empleats = session.query("for $x in  doc(\"empresa\")//emp "
                         + "where $x/@dept = \"" + pk + "\" return concat "
-                                + "(\"/\",$x/@codi,\",\",$x/@cap,\",\",$x/cognom,"
-                                + "\",\",$x/ofici,\",\",$x/dataAlta,\",\",$x/salari,"
-                                + "\",\",$x/comissio,\" \")").execute().split("/");
+                        + "(\"/\",$x/@codi,\",\",$x/@cap,\",\",$x/cognom,"
+                        + "\",\",$x/ofici,\",\",$x/dataAlta,\",\",$x/salari,"
+                        + "\",\",$x/comissio,\" \")").execute().split("/");
                 if (empleats.length > 1) {
                     for (int i = 1; i < empleats.length; i++) {
                         String[] empleatarr = empleats[i].split(",");
@@ -100,8 +100,8 @@ public class Gestor {
                         System.out.println(e.getComissio());
                     }
                     departament.setEmpleats(empleatsList);
-                }else{
-                      System.out.println("El departament no té cap empleat");
+                } else {
+                    System.out.println("El departament no té cap empleat");
                 }
             }
 
@@ -115,8 +115,8 @@ public class Gestor {
     public void insertDept(Dept departament) {
         if (getDeptSenseEmp(departament.codi) == null) {
             try {
-                session.query("insert node <dept codi=\"" + departament.codi + "\"><nom>" 
-                        + departament.nom + "</nom><localitat>" + departament.localitat 
+                session.query("insert node <dept codi=\"" + departament.codi + "\"><nom>"
+                        + departament.nom + "</nom><localitat>" + departament.localitat
                         + "</localitat></dept>into doc(\"empresa\")//departaments").execute();
                 System.out.println("Departament afegit");
                 if (departament.getEmpleats() != null) {
@@ -140,20 +140,20 @@ public class Gestor {
                     for (int i = 0; i < founded.length; i++) {
                         if (founded[i] == 0) {
                             Emp temp = listEmpleats.get(i);
-                            session.query("insert node <emp codi=\"" + temp.getCodi() 
-                                    + "\" dept=\"" + departament.codi + "\" cap=\"" 
-                                    + temp.getCodiCap() + "\"><cognom>" + temp.getCognom() 
-                                    + "</cognom><ofici>" + temp.getOfici() + "</ofici><dataAlta>" 
-                                    + temp.getDataAlta() + "</dataAlta><salari>" 
-                                    + String.valueOf(temp.getSalari()) + "</salari><comissio>" 
+                            session.query("insert node <emp codi=\"" + temp.getCodi()
+                                    + "\" dept=\"" + departament.codi + "\" cap=\""
+                                    + temp.getCodiCap() + "\"><cognom>" + temp.getCognom()
+                                    + "</cognom><ofici>" + temp.getOfici() + "</ofici><dataAlta>"
+                                    + temp.getDataAlta() + "</dataAlta><salari>"
+                                    + String.valueOf(temp.getSalari()) + "</salari><comissio>"
                                     + String.valueOf(temp.getComissio()) + "</comissio></emp> "
-                                            + "into doc(\"empresa\")//empleats").execute();
+                                    + "into doc(\"empresa\")//empleats").execute();
                             System.out.println("Afegit empleat:" + temp.getCodi());
                         } else if (founded[i] == 1) {
                             Emp temp = listEmpleats.get(i);
-                            session.query("replace value of node doc(\"empresa\")//emp[@codi='" + 
-                                    temp.getCodi() + "']/@dept with \"" + departament.codi + "\"").execute();
-                            System.out.println("Empleat: " + temp.getCodi() 
+                            session.query("replace value of node doc(\"empresa\")//emp[@codi='"
+                                    + temp.getCodi() + "']/@dept with \"" + departament.codi + "\"").execute();
+                            System.out.println("Empleat: " + temp.getCodi()
                                     + " Canviat a departament " + departament.codi);
                         }
                     }
@@ -174,15 +174,16 @@ public class Gestor {
         if (!departament.equals(nouDepartament)) {
             if (getDeptSenseEmp(departament) != null && getDeptSenseEmp(nouDepartament) != null) {
                 try {
-                    String[] empleats = session.query(" for $x in doc(\"empresa\")//emp where $x/@dept=\"" 
+                    String[] empleats = session.query(" for $x in doc(\"empresa\")//emp where $x/@dept=\""
                             + departament + "\" return concat(\"/\",$x/@codi)").execute().split("/");
+                    if (empleats.length > 1) {
+                        for (int i = 1; i < empleats.length; i++) {
+                            String empleatCodi = empleats[i].trim();
+                            session.query("replace value of node doc(\"empresa\")//emp[@codi='"
+                                    + empleatCodi + "']/@dept with \"" + nouDepartament + "\"").execute();
+                            System.out.println("Empleat:" + empleatCodi + "Canviat a departament " + nouDepartament);
 
-                    for (int i = 1; i < empleats.length; i++) {
-                        String empleatCodi = empleats[i].trim();
-                        session.query("replace value of node doc(\"empresa\")//emp[@codi='" 
-                                + empleatCodi + "']/@dept with \"" + nouDepartament + "\"").execute();
-                        System.out.println("Empleat:" + empleatCodi + "Canviat a departament " + nouDepartament);
-
+                        }
                     }
                     session.query("delete node doc('empresa')//dept[@codi=\"" + departament + "\"]").execute();
                     System.out.println("Departament eliminat");
@@ -190,37 +191,25 @@ public class Gestor {
                 } catch (IOException ex) {
                 }
             }
-        }else{
+        } else {
             System.out.println("Els codis introduits son iguals");
         }
     }
 
     public void replaceDept(Dept nouDepartament, String remplac) {
 
-        if (getDeptSenseEmp(nouDepartament.codi) != null) {
-            if (getDeptSenseEmp(remplac) != null) {
-                try {
-                    session.query("replace value of node doc(\"empresa\")//dept[@codi='" + nouDepartament.codi + "']/@codi with \"" + nouDepartament.codi + "\"").execute();
-
-                    //                   String[] empleats = session.query(" for $x in doc(\"empresa\")//emp where $x/@dept=\"" + nouDepartament.codi + "\" return concat(\"/\",$x/@codi)").execute().split("/");
-                    //hay que cambiar remplac por nouDepartament, por tanto hay que borrar remplac
+        if (getDeptSenseEmp(nouDepartament.codi) != null && getDeptSenseEmp(remplac) != null) {
+       
                     deleteDept(remplac, nouDepartament.codi);
-//                    for (int i = 1; i < empleats.length; i++) {
-//                        String empleatCodi = empleats[i].trim();
-//                        session.query("replace value of node doc(\"empresa\")//emp[@codi='" + empleatCodi + "']/@dept with \"" + remplac + "\"").execute();
-//                        System.out.println("Empleat:" + empleatCodi + "Canviat a nouDepartament " + remplac);
-//                    }
-                } catch (IOException ex) {
+                    Dept dep = getDeptSenseEmp(nouDepartament.codi);
+                    dep.codi = remplac;
+                    insertDept(dep);
+                    deleteDept(nouDepartament.codi, remplac);
 
-                }
-            } else {
-                System.out.println("El codi del departament: " + remplac + " no existeix");
             }
-        } else {
-            System.out.println("El departament " + nouDepartament.codi + " no existeix");
-
         }
-    }
+
+    
 
     public void tancarSessio() {
         try {

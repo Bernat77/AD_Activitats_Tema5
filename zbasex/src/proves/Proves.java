@@ -24,13 +24,15 @@ public class Proves {
 
         Gestor gestor = null;
         try {
+            
             gestor = new Gestor("empresa");
 
-            Dept dp = new Dept("d500", "departament", "Mallorca");
-            gestor.insertDept(dp);
+            Dept dept = gestor.getDeptAmbEmp("d200");
+        
+            gestor.replaceDept(dept,"d10");
             
             
-
+ //   Dept dp = new Dept("d500", "departament", "Mallorca");
 //            ArrayList<Emp> emple = new ArrayList();
 //
 //            Emp emp1 = new Emp();
